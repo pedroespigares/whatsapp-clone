@@ -15,6 +15,9 @@
     --text-color: #E9EDE3;
     --icon-color: #AEBAC1;
     --chat-type-color: #2A3942;
+    --chat-notif-bg-color: #182229;
+    --chat-notif-text-color: #F1D25F;
+    --scrollbar-color: #323A3F;
     --text-font-weight: 400;
     --title-font-weight: 600;
     --transition-time: 0.2s;
@@ -23,6 +26,22 @@
     --box-shadow: 19px 11px 5px -1px rgba(13,13,13,0.44);
 }
 
+::-webkit-scrollbar {
+    width: 5px;
+}
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: none; 
+}
+   
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    opacity: 0.5;
+    transition: var(--transition-time);
+}
+  
 
 .sidebar-header{
     background-color: var(--header-color);
@@ -80,13 +99,12 @@
 
 .chat-group{
     background-color: var(--chat-list-color);
-    height: 91vh;
+    height: calc(100vh - 62px);
 }
 
 .chat-preview{
     background-color: var(--chat-list-color) !important;
-    border-top: 0.2px solid var(--icon-color) !important;
-    border-bottom: none !important;
+    border: none !important;
 }
 
 .chat-preview .card-title{
@@ -121,29 +139,30 @@
 
 .chat-messages{
     background-image: url("../images/bg-img.jpg");
+    overflow-y: scroll;
+    height: calc(100vh - (62px + 62.5px));
 }
 
 .single-message-other-user, .single-message-my-user{
-    width: min-content;
-    height: min-content;
+    width: max-content;
+    height: max-content;
+    max-width: 40%;
     border-radius: 0.5rem;
+    color: var(--text-color);
+    font-size: 1.5rem;
 }
 
 .single-message-other-user{
     background-color: var(--header-color);
-    color: var(--text-color);
-    font-size: 1.5rem;
 }
 
 .single-message-my-user{
     background-color: var(--current-user-message-color);
-    color: var(--text-color);
-    font-size: 1.5rem;
 }
 
 .single-message-content{
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 
@@ -171,7 +190,7 @@
     font-size: 1.5rem;
     color: var(--text-color) !important;
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 1rem;
 }
 
 .chat-type input::placeholder{
@@ -184,4 +203,11 @@
     outline: none;
     background-color: var(--chat-type-color);
     box-shadow: none;
+}
+
+.chat-notification{
+    background-color: var(--chat-notif-bg-color);
+    color: var(--chat-notif-text-color);
+    font-size: 1.5rem;
+    border-radius: 0.5rem;
 }
