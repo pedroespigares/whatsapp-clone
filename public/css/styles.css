@@ -18,6 +18,7 @@
     --chat-notif-bg-color: #182229;
     --chat-notif-text-color: #F1D25F;
     --scrollbar-color: #323A3F;
+    --light-green: #25D366;
     --text-font-weight: 400;
     --title-font-weight: 600;
     --transition-time: 0.2s;
@@ -268,4 +269,68 @@ ul.dropdown-menu{
     color: var(--text-color);
     font-size: 5rem;
     font-weight: var(--title-font-weight);
+}
+
+.usernameInHeader{
+    color: var(--text-color);
+    font-size: 2rem;
+    font-weight: var(--text-font-weight);
+}
+
+.typing{
+    color: var(--light-green) !important;
+    font-size: 1.75rem;
+    font-weight: bold;
+    letter-spacing: 0.1rem;
+    display: none;
+}
+
+#chatSelect{
+    background-color: var(--header-color);
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color) !important;
+    border-radius: 0.5rem;
+    padding: 2rem;
+}
+
+input#joinChatButton{
+    background-color: var(--light-green);
+    border: none;
+    font-size: 3rem;
+    color: var(--header-color) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: var(--transition-time);
+    text-transform: uppercase;
+    width: 15%;
+}
+
+input#joinChatButton:hover{
+    cursor: pointer;
+    transition: var(--transition-time);
+    scale: 1.05;
+}
+
+input#imageInput{
+    display: none;
+}
+
+
+.userPhotoDiv{
+    width: 15%;
+    background-color: var(--header-color);
+    border: none;
+    font-size: 2rem;
+    color: var(--text-color) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: var(--transition-time);
+    text-transform: uppercase;
+}
+
+.userPhotoDiv:hover{
+    cursor: pointer;
+    transition: var(--transition-time);
+    scale: 1.05;
 }

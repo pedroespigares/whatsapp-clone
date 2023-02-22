@@ -1,48 +1,71 @@
-var socket = io();
+    var photo;
+
+    function uploadUserPhoto(files){
+        photo = files[0];
+    }
+    
+    var socket = io();
 
       socket.on('connect', function(){
           socket.emit('setID',socket.id);
       });
       
       socket.on('usersConnected', function(users){
+        socket.on('userPhotoUploaded', function(){
           $('#usersConnected').html(`Users connected: ${users}`);
+        });
       });
 
-      $(document).on('click', '#addUsernameBtn', function(){
-          socket.emit('addUsername', usernameInput.val());
-          usernameInput.val('');
+      $(document).on('change', '#imageInput',function(e){
+        uploadUserPhoto(e.target.files);
+      });
+
+
+      $(document).on('submit', '#joinChat', function(e){
+          e.preventDefault();
+          let username = $('#usernameInput').val();
+          let room = $('#chatSelect').val();
+          
+
+          socket.emit('addUserToRoom', {
+                username: username,
+                room: room,
+                userPhoto: photo
+          });
+
+          socket.on('userPhotoUploaded', function(){
+
+          $('#usernameInput').val();
           $('body').addClass('container-fluid');
           $("body").html(`
             <div class="row">
-                <aside class="col-4 p-0 m-0">
+                <aside class="col-3 p-0 m-0">
                     <header class="d-flex justify-content-between align-items-center sidebar-header">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
+                        <div class="d-flex align-items-center justify-content-center gap-3">
+                            <img src="./userPhotos/${socket.id}.jpg" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar">
+                            <h3 class="mb-0 usernameInHeader">${username}</h3>
+                        </div>
                         <div class="d-flex align-items-center justify-content-center gap-3">
                             <i class="fa-solid fa-users"></i>
                             <i class="fa-sharp fa-solid fa-circle-notch"></i>
                             <i class="fa-solid fa-message"></i>
                             <i class="fa-solid fa-ellipsis-v" data-bs-toggle="dropdown" aria-expanded="false"></i>
                             <ul class="dropdown-menu">
-                            <li><a class="dropdown-item">Logout</a></li>
+                            <li><a class="dropdown-item logout">Logout</a></li>
                             </ul>
                         </div>
                     </header>
                     <div class="d-flex flex-column justify-content-start align-items-center chat-group gap-3">
-                        <!-- <div class="d-flex justify-content-center align-items-center gap-3 w-75 mt-3 mb-3 search-chat">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <input id="usernameInput" type="text" class="form-control" placeholder="Change username">
-                        <i id="addUsernameBtn" class="fa-solid fa-plus"></i>
-                        </div> -->
-                        <p id="usersConnected" class="text-center"></p>
+                        <p id="usersConnected" class="text-center mt-3"></p>
                         <div id="user-list" class="align-self-start ps-5"></div>
                     </div>
                 </aside>
                 
-                <main class="col-8 d-flex flex-column justify-content-start align-items-center p-0 m-0">
+                <main class="col-9 d-flex flex-column justify-content-start align-items-center p-0 m-0">
                     <header class="chat-header d-flex justify-content-between align-items-center w-100">
                         <div class="d-flex justify-content-center align-items-center gap-3">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
-                            <h3 class="mb-0">Usuario</h3>
+                            <h3 class="mb-0">Room ${room}</h3>
                         </div>
                         <div class="d-flex justify-content-center align-items-center gap-3 pe-4 search-in-chat">
                             <i class="fa-solid fa-search"></i>
@@ -59,68 +82,16 @@ var socket = io();
                         <i class="fa-solid fa-microphone"></i>
                     </div>
                 </main>
-            </div>`)
+            </div>`)});
       });
 
-      
-      $(document).on('keyup', '#usernameInput', function(e){
-          if(e.keyCode === 13){
-              socket.emit('addUsername', $('#usernameInput').val());
-              $('#usernameInput').val('');
+      $(document).on('click', '.logout', function(){
+        window.location.reload();
+    });
 
-            $('body').addClass('container-fluid');
-            $("body").html(`
-            <div class="row">
-                <aside class="col-4 p-0 m-0">
-                    <header class="d-flex justify-content-between align-items-center sidebar-header">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <i class="fa-solid fa-users"></i>
-                            <i class="fa-sharp fa-solid fa-circle-notch"></i>
-                            <i class="fa-solid fa-message"></i>
-                            <i class="fa-solid fa-ellipsis-v" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                            <ul class="dropdown-menu">
-                            <li><a class="dropdown-item">Logout</a></li>
-                            </ul>
-                        </div>
-                    </header>
-                    <div class="d-flex flex-column justify-content-start align-items-center chat-group gap-3">
-                        <!-- <div class="d-flex justify-content-center align-items-center gap-3 w-75 mt-3 mb-3 search-chat">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <input id="usernameInput" type="text" class="form-control" placeholder="Change username">
-                        <i id="addUsernameBtn" class="fa-solid fa-plus"></i>
-                        </div> -->
-                        <p id="usersConnected" class="text-center"></p>
-                        <div id="user-list" class="align-self-start ps-5"></div>
-                    </div>
-                </aside>
-                
-                <main class="col-8 d-flex flex-column justify-content-start align-items-center p-0 m-0">
-                    <header class="chat-header d-flex justify-content-between align-items-center w-100">
-                        <div class="d-flex justify-content-center align-items-center gap-3">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
-                            <h3 class="mb-0">Usuario</h3>
-                        </div>
-                        <div class="d-flex justify-content-center align-items-center gap-3 pe-4 search-in-chat">
-                            <i class="fa-solid fa-search"></i>
-                            <i class="fa-solid fa-ellipsis-v"></i>
-                        </div>
-                    </header>
-                    <div id="chat-messages" class="chat-messages w-100 d-flex flex-column justify-content-start">
-
-                    </div>
-                    <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
-                        <i class="fa-solid fa-face-smile"></i>
-                        <i class="fa-solid fa-paperclip"></i>
-                        <input id="newMessage" type="text" class="form-control" placeholder="Escribe un mensaje">
-                        <i class="fa-solid fa-microphone"></i>
-                    </div>
-                </main>
-            </div>`)
-          }
-      });
-
+    
       socket.on('newUserConnected', function(users){
+        socket.on('userPhotoUploaded', function(){
           $('#user-list').html('');
           let lastUser = users[users.length - 1];
           $('#chat-messages').append(`
@@ -129,20 +100,22 @@ var socket = io();
           users.forEach(function(user){
               $('#user-list').append(`
               <div class="card chat-preview w-100">
-                    <div class="row g-0">
+                    <div class="row g-0 w-100">
                       <div class="col-md-2 d-flex justify-content-center align-items-center">
-                        <i class="fa-solid fa-user p-3 pe-5"></i>
+                        <img src="./userPhotos/${socket.id}.jpg" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar me-5">
                       </div>
                       <div class="col-md-10 d-flex justify-content-center align-items-center">
                         <div class="card-body p-0 ps-3">
                           <input type="hidden" value="${user.id}">
                           <h5 class="card-title mb-0">${user.username}</h5>
+                          <p class="card-text typing mt-2">Typing...</p>
                         </div>
                       </div>
                     </div>
                 </div>
               `);
           });
+        });
       });
 
       socket.on('userDisconnected', function(userData){
@@ -186,3 +159,24 @@ var socket = io();
           $(".single-message-username").css('color', "#ee50af");
           $('#chat-messages').animate({scrollTop: $('#chat-messages').prop("scrollHeight")}, 500);
       })
+
+
+      $(document).on('keyup', '#newMessage', function(){
+            if($("#newMessage").val() !== ""){
+                $(".fa-microphone").removeClass("fa-microphone").addClass("fa-paper-plane");
+                socket.emit('typing', {userID: socket.id, typing: true});
+            }else{
+                $(".fa-paper-plane").removeClass("fa-paper-plane").addClass("fa-microphone");
+                socket.emit('typing', {userID: socket.id, typing: false});
+            }
+      });
+
+        socket.on('typing', function(data){
+            if(!data.typing){
+                setInterval(function(){
+                    $(`input[value="${data.userID}"]`).siblings('.typing').css('display', 'none');
+                }, 3000);
+            } else{
+                $(`input[value="${data.userID}"]`).siblings('.typing').css('display', 'block');
+            }
+        });

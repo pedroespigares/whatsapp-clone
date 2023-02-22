@@ -22,11 +22,35 @@
             </div>
         </div>
         
-        <div class="d-flex justify-content-center align-items-center gap-3 w-75 mt-3 mb-3 search-chat">
-            <i class="fa-solid fa-user-plus"></i>
-            <input id="usernameInput" type="text" class="form-control p-3" placeholder="Change username">
-            <i id="addUsernameBtn" class="fa-solid fa-plus"></i>
+        <div class="d-flex justify-content-center align-items-center gap-5 w-100 mt-3 mb-3">
+            <form id="joinChat" class="d-flex flex-column justify-content-center align-items-center gap-5 w-100 mt-3 mb-3">
+                <div class="d-flex justify-content-center align-items-center gap-3 w-50 search-chat">
+                    <i class="fa-solid fa-user"></i>
+                    <input id="usernameInput" type="text" class="form-control p-3" placeholder="Enter username" required>
+                </div>
+                
+                <select id="chatSelect" class="form-select w-25 p-3" required>
+                    <option selected value="1">Room 1</option>
+                    <option value="2">Room 2</option>
+                    <option value="3">Room 3</option>
+                    <option value="4">Room 4</option>
+                    <option value="5">Room 5</option>
+                    <option value="6">Room 6</option>
+                    <option value="7">Room 7</option>
+                    <option value="8">Room 8</option>
+                    <option value="9">Room 9</option>
+                    <option value="10">Room 10</option>
+                </select>
+
+                <div class="d-flex justify-content-center align-items-center gap-3 userPhotoDiv">
+                    <label for="imageInput" class="w-50" id="userPhotoLabel">User Photo</label>
+                    <i class="fa-solid fa-image" class="w-50"></i>
+                    <input type="file" id="imageInput" accept="image/*" required>
+                </div>
+            <input type="submit" id="joinChatButton" value="Join Chat" class="btn btn-primary p-3">Join Chat</input>
+            </form>
         </div>
+        
     </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
