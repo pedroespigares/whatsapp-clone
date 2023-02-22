@@ -78,6 +78,11 @@ io.on('connection', (socket) => {
     io.emit('usersConnected', usersConnected);
     io.emit('userDisconnected', {id: socket.userID, username: socket.username});
     console.log(`DESCONECTADO --> ID: ${ids}`);
+    users.forEach(user => {
+      if(user.id == socket.userID){
+        users.splice(users.indexOf(user), 1);
+      }
+    });
   });
 });
 

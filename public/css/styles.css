@@ -74,13 +74,13 @@
 .search-chat, .search-chat input{
     background-color: var(--header-color);
     border: none;
-    font-size: 1.5rem;
+    font-size: 3rem;
     color: var(--icon-color) !important;
 }
 
 .search-chat input::placeholder{
     color: var(--icon-color);
-    font-size: 1.5rem;
+    font-size: 3rem;
     font-weight: var(--text-font-weight);
 }
 
@@ -92,7 +92,7 @@
 
 .search-chat i{
     color: var(--icon-color);
-    font-size: 1.5rem;
+    font-size: 3rem;
     padding: 1rem;
     transition: var(--transition-time);
 }
@@ -257,4 +257,15 @@ ul.dropdown-menu{
     background-image: none;
     background-color: var(--header-color);
     cursor: pointer;
+}
+
+.lobby{
+    background-image: url("../images/bg-img.jpg");
+    height: 100vh;
+}
+
+.title-lobby{
+    color: var(--text-color);
+    font-size: 5rem;
+    font-weight: var(--title-font-weight);
 }
