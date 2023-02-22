@@ -97,8 +97,27 @@
     transition: var(--transition-time);
 }
 
+.fa-plus:hover{
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition-time);
+    scale: 1.1;
+}
+
+#usersConnected{
+    color: var(--icon-color);
+    font-size: 1.5rem;
+}
+
+.fa-user{
+    color: var(--icon-color);
+    font-size: 4rem;
+    transition: var(--transition-time);
+}
+
 .chat-group{
     background-color: var(--chat-list-color);
+    overflow-y: scroll;
     height: calc(100vh - 62px);
 }
 
@@ -160,11 +179,19 @@
     background-color: var(--current-user-message-color);
 }
 
-.single-message-content{
+.single-message-content, .single-message-username{
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
 
+.single-message-username{
+    font-size: 1.75rem;
+}
+
+.single-message-date{
+    font-size: 1rem;
+    color: var(--icon-color);
+}
 
 .chat-type{
     background-color: var(--header-color);
@@ -210,4 +237,24 @@
     color: var(--chat-notif-text-color);
     font-size: 1.5rem;
     border-radius: 0.5rem;
+}
+
+ul.dropdown-menu{
+    background-color: var(--header-color);
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.dropdown-item{
+    color: var(--text-color) !important;
+    font-size: 1.5rem;
+    padding: 1rem;
+    transition: var(--transition-time);
+}
+
+.dropdown-menu > li > a:hover {
+    background-image: none;
+    background-color: var(--header-color);
+    cursor: pointer;
 }
