@@ -169,6 +169,13 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('singleUserPhoto', (data) => {
+    socket.emit('singleUserPhoto', {
+      path: `userPhotos/${data.userID}.jpg`,
+      username: data.username
+    });
+  });
+
   // Desconectar usuario
   socket.on('disconnect', () => {
     switch(socket.room){

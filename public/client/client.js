@@ -1,53 +1,49 @@
 var photo;
 
-    function uploadUserPhoto(files){
-        photo = files[0];
-    }
-    
-    var socket = io();
+function uploadUserPhoto(files) {
+  photo = files[0];
+}
 
-    // Setear ID del usuario
-      socket.on('connect', function(){
-          socket.emit('setID',socket.id);
-      });
-      
-    //   Cuando la foto de usuario se haya subido al servidor sale como que se ha conectado
-      socket.on('usersConnected', function(users){
-        socket.on('userPhotoUploaded', function(){
-          $('#usersConnected').html(`Users connected: ${users}`);
-        });
-      });
+var socket = io();
 
-      // OnChange del input de la foto de usuario
-      $(document).on('change', '#imageInput',function(e){
-        uploadUserPhoto(e.target.files);
-      });
+// Setear ID del usuario
+socket.on("connect", function () {
+  socket.emit("setID", socket.id);
+});
 
+//   Cuando la foto de usuario se haya subido al servidor sale como que se ha conectado
+socket.on("usersConnected", function (users) {
+  socket.on("userPhotoUploaded", function () {
+    $("#usersConnected").html(`Users connected: ${users}`);
+  });
+});
 
-        // Cuando se envía el formulario de creación de usuario
-      $(document).on('submit', '#joinChat', function(e){
-          e.preventDefault();
-          let username = $('#usernameInput').val();
-          let room = $('#chatSelect').val();
-          
+// OnChange del input de la foto de usuario
+$(document).on("change", "#imageInput", function (e) {
+  uploadUserPhoto(e.target.files);
+});
 
-          socket.emit('addUserToRoom', {
-                username: username,
-                room: room,
-                userPhoto: photo
-          });
+// Cuando se envía el formulario de creación de usuario
+$(document).on("submit", "#joinChat", function (e) {
+  e.preventDefault();
+  let username = $("#usernameInput").val();
+  let room = $("#chatSelect").val();
 
-          socket.on('userPhotoUploaded', function(){
+  socket.emit("addUserToRoom", {
+    username: username,
+    room: room,
+    userPhoto: photo,
+  });
 
-          $('#usernameInput').val();
-          $('body').addClass('container-fluid');
-          $("body").html(`
+  //   socket.on('userPhotoUploaded', function(){
+
+  $("#usernameInput").val();
+  $("body").addClass("container-fluid");
+  $("body").html(`
             <div class="row">
                 <aside class="col-3 p-0 m-0">
                     <header class="d-flex justify-content-between align-items-center sidebar-header">
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <img src="./userPhotos/${socket.id}.jpg" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar">
-                            <h3 class="mb-0 usernameInHeader">${username}</h3>
+                        <div id="sidebar_header" class="d-flex align-items-center justify-content-center gap-3">       
                         </div>
                         <div class="d-flex align-items-center justify-content-center gap-3">
                             <i class="fa-solid fa-users"></i>
@@ -77,7 +73,6 @@ var photo;
                         </div>
                     </header>
                     <div id="chat-messages" class="chat-messages w-100 d-flex flex-column justify-content-start">
-
                     </div>
                     <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
                         <i class="fa-sharp fa-regular fa-face-smile"></i>
@@ -86,41 +81,68 @@ var photo;
                         <i class="fa-solid fa-microphone"></i>
                     </div>
                 </main>
-            </div>`)});
-      });
+            </div>`);
+});
+//   });
 
-      // Para cerrar sesión recargamos la página
-      $(document).on('click', '.logout', function(){
-        window.location.reload();
+// Para cerrar sesión recargamos la página
+$(document).on("click", ".logout", function () {
+  window.location.reload();
+});
+
+// Cuando se conecta un nuevo usuario
+socket.on("newUserConnected", function (users) {
+
+  $("#user-list").html("");
+
+  let lastUser = users[users.length - 1];
+  let actualUser;
+
+  if (users.length == 1) {
+    actualUser = users[users.length - 1];
+  } else {
+    users.forEach(function (user) {
+        if (user.id == socket.id) {
+            actualUser = user;
+        }
     });
+  }
 
-    
-    // Cuando se conecta un nuevo usuario
-      socket.on('newUserConnected', function(users){
-          $('#user-list').html('');
-          let lastUser = users[users.length - 1];
-          if(lastUser.id == socket.id){
-            $('#chat-messages').append(`
+  if (lastUser.id == socket.id) {
+    $("#chat-messages").append(`
                 <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">You have joined the chat</p>
             `);
-          } else {
-            $('#chat-messages').append(`
+  } else {
+    $("#chat-messages").append(`
                 <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">${lastUser.username} has joined the chat</p>
             `);
-        }
+  }
 
-          $('#usersConnected').html(`Users connected: ${users.length}`);
-          users.forEach(function(user){
-            socket.emit('getPhotoOfUser', {
-                userID: user.id,
-                username: user.username
-            });
-          });
-        });
+  socket.emit("singleUserPhoto", {
+    userID: actualUser.id,
+    username: actualUser.username,
+  });
 
-        // Sacamos la foto del usuario que se ha conectado
-      socket.on('photoOfUser', function(data){
-        $('#user-list').append(`
+  socket.on("singleUserPhoto", function (data) {
+    $("#sidebar_header").html(`
+                <img src=${data.path} alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar">
+                <h3 class="mb-0 usernameInHeader">${data.username}</h3>
+            `);
+  });
+
+  $("#usersConnected").html(`Users connected: ${users.length}`);
+
+  users.forEach(function (user) {
+    socket.emit("getPhotoOfUser", {
+      userID: user.id,
+      username: user.username,
+    });
+  });
+});
+
+// Sacamos la foto del usuario que se ha conectado
+socket.on("photoOfUser", function (data) {
+  $("#user-list").append(`
         <div class="card chat-preview w-100 mb-4">
               <div class="row g-0 w-100">
                 <div class="col-md-2 d-flex justify-content-center align-items-center">
@@ -136,76 +158,87 @@ var photo;
               </div>
           </div>
         `);
-      });
+});
 
-        // Cuando se desconecta un usuario
-      socket.on('userDisconnected', function(userData){
-          let userID = userData.id;
-          let username = userData.username;
-          $(`input[value="${userID}"]`).parent().parent().parent().parent().remove();
-          $('#chat-messages').append(`
+// Cuando se desconecta un usuario
+socket.on("userDisconnected", function (userData) {
+  let userID = userData.id;
+  let username = userData.username;
+  $(`input[value="${userID}"]`).parent().parent().parent().parent().remove();
+  $("#chat-messages").append(`
               <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">${username} has left the chat</p>
           `);
-          $('#usersConnected').html(`Users connected: ${userData.usersConnected}`);
-          $('#chat-messages').animate({scrollTop: $('#chat-messages').prop("scrollHeight")}, 500);
-      });
+  $("#usersConnected").html(`Users connected: ${userData.usersConnected}`);
+  $("#chat-messages").animate(
+    { scrollTop: $("#chat-messages").prop("scrollHeight") },
+    500
+  );
+});
 
-        // Cuando se escribe un mensaje
-      $(document).on('keyup', '#newMessage', function(e){
-          if(e.keyCode === 13){
-              socket.emit('newMessage', $('#newMessage').val());
-              $('#newMessage').val('');
-          }
-      });
+// Cuando se escribe un mensaje
+$(document).on("keyup", "#newMessage", function (e) {
+  if (e.keyCode === 13) {
+    socket.emit("newMessage", $("#newMessage").val());
+    $("#newMessage").val("");
+  }
+});
 
-        // Cuando se envía un mensaje
-      socket.on('newMessage', function(messageData){
-          let formattedDate = new Date(messageData.date);
-          let hours = formattedDate.getHours();
-          let minutes = formattedDate.getMinutes();
-          if(minutes < 10){
-                minutes = '0' + minutes;
-            }
-          if(messageData.id === socket.id){
-              $('#chat-messages').append(`
+// Cuando se envía un mensaje
+socket.on("newMessage", function (messageData) {
+  let formattedDate = new Date(messageData.date);
+  let hours = formattedDate.getHours();
+  let minutes = formattedDate.getMinutes();
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  if (messageData.id === socket.id) {
+    $("#chat-messages").append(`
               <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
                   <p class="single-message-content m-0">${messageData.message}</p>
                   <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
               </div>
               `);
-          }else{
-              $('#chat-messages').append(`
+  } else {
+    $("#chat-messages").append(`
               <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
                   <h6 class="single-message-username mb-0">${messageData.username}</h6>
                   <p class="single-message-content m-0">${messageData.message}</p>
                   <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
               </div>
               `);
-          }
-          
-          $(".single-message-username").css('color', "#ee50af");
-          $('#chat-messages').animate({scrollTop: $('#chat-messages').prop("scrollHeight")}, 500);
-      })
+  }
 
+  $(".single-message-username").css("color", "#ee50af");
+  $("#chat-messages").animate(
+    { scrollTop: $("#chat-messages").prop("scrollHeight") },
+    500
+  );
+});
 
-        // Cuando se escribe un mensaje (para mostrar el icono de enviar)
-      $(document).on('keyup', '#newMessage', function(){
-            if($("#newMessage").val() !== ""){
-                $(".fa-microphone").removeClass("fa-microphone").addClass("fa-paper-plane");
-                socket.emit('typing', {userID: socket.id, typing: true});
-            }else{
-                $(".fa-paper-plane").removeClass("fa-paper-plane").addClass("fa-microphone");
-                socket.emit('typing', {userID: socket.id, typing: false});
-            }
-      });
+// Cuando se escribe un mensaje (para mostrar el icono de enviar)
+$(document).on("keyup", "#newMessage", function () {
+  if ($("#newMessage").val() !== "") {
+    $(".fa-microphone").removeClass("fa-microphone").addClass("fa-paper-plane");
+    socket.emit("typing", { userID: socket.id, typing: true });
+  } else {
+    $(".fa-paper-plane")
+      .removeClass("fa-paper-plane")
+      .addClass("fa-microphone");
+    socket.emit("typing", { userID: socket.id, typing: false });
+  }
+});
 
-        // Cuando se está escribiendo un mensaje (para mostrar el texto "typing...")
-        socket.on('typing', function(data){
-            if(!data.typing){
-                setInterval(function(){
-                    $(`input[value="${data.userID}"]`).siblings('.typing').css('display', 'none');
-                }, 3000);
-            } else{
-                $(`input[value="${data.userID}"]`).siblings('.typing').css('display', 'block');
-            }
-        });
+// Cuando se está escribiendo un mensaje (para mostrar el texto "typing...")
+socket.on("typing", function (data) {
+  if (!data.typing) {
+    setInterval(function () {
+      $(`input[value="${data.userID}"]`)
+        .siblings(".typing")
+        .css("display", "none");
+    }, 3000);
+  } else {
+    $(`input[value="${data.userID}"]`)
+      .siblings(".typing")
+      .css("display", "block");
+  }
+});
