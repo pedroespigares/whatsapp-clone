@@ -289,7 +289,7 @@ ul.dropdown-menu{
 #chatSelect{
     background-color: var(--header-color);
     border: none;
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: var(--text-color) !important;
     border-radius: 0.5rem;
     padding: 2rem;
@@ -314,6 +314,10 @@ input#joinChatButton:hover{
 }
 
 input#imageInput{
+    display: none;
+}
+
+input#chatImageInput{
     display: none;
 }
 

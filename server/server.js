@@ -161,6 +161,7 @@ io.on('connection', (socket) => {
     io.to(socket.room).emit('typing', {userID: data.userID, typing: data.typing});
   });
 
+  // Enviar foto de usuario
   socket.on('getPhotoOfUser', (data) => {
     socket.emit('photoOfUser', {
       path: `userPhotos/${data.userID}.jpg`,
@@ -169,12 +170,20 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Enviar foto de usuario
   socket.on('singleUserPhoto', (data) => {
     socket.emit('singleUserPhoto', {
       path: `userPhotos/${data.userID}.jpg`,
       username: data.username
     });
   });
+
+
+  // Subir fichero
+  socket.on('uploadFile', (file) => {
+    console.log(file);
+  });
+    
 
   // Desconectar usuario
   socket.on('disconnect', () => {

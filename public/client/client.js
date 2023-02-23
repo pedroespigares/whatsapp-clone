@@ -76,7 +76,8 @@ $(document).on("submit", "#joinChat", function (e) {
                     </div>
                     <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
                         <i class="fa-sharp fa-regular fa-face-smile"></i>
-                        <i class="fa-solid fa-paperclip"></i>
+                        <label for="chatImageInput"><i class="fa-solid fa-paperclip"></i></label>
+                        <input type="file" id="chatImageInput">
                         <input id="newMessage" type="text" class="form-control" placeholder="Escribe un mensaje">
                         <i class="fa-solid fa-microphone"></i>
                     </div>
@@ -241,4 +242,10 @@ socket.on("typing", function (data) {
       .siblings(".typing")
       .css("display", "block");
   }
+});
+
+
+// OnChange del input de la imagen para enviarla al servidor y que la suba
+$(document).on("change", "#chatImageInput", function (e) {
+  socket.emit("uploadFile", e.target.files[0].name);
 });
