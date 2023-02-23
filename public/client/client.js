@@ -216,6 +216,66 @@ socket.on("newMessage", function (messageData) {
   );
 });
 
+socket.on('mesaggeWithFile', function (messageData) {
+  socket.emit('handleMessageWithFile', messageData);
+});
+
+socket.on('WriteMesaggeWithFile', function (messageData) {
+  let formattedDate = new Date(messageData.date);
+  let hours = formattedDate.getHours();
+  let minutes = formattedDate.getMinutes();
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  let filename = messageData.path.split('/').pop();
+
+  if(messageData.type.includes('image')){
+    if (messageData.id === socket.id) {
+      $("#chat-messages").append(`
+                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
+                    <img src=${messageData.path}>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    } else {
+      $("#chat-messages").append(`
+                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
+                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
+                    <img src=${messageData.path}>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    }
+  }else{
+    if (messageData.id === socket.id) {
+      $("#chat-messages").append(`
+                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
+                    <p class="single-message-content fileNotImg m-0">${filename}</p>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    } else {
+      $("#chat-messages").append(`
+                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
+                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
+                    <p class="single-message-content fileNotImg m-0">${filename}</p>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    }
+  }
+
+  $(".single-message-username").css("color", "#ee50af");
+  $("#chat-messages").animate(
+    { scrollTop: $("#chat-messages").prop("scrollHeight") },
+    500
+  );
+});
+
 // Cuando se escribe un mensaje (para mostrar el icono de enviar)
 $(document).on("keyup", "#newMessage", function () {
   if ($("#newMessage").val() !== "") {
@@ -247,5 +307,32 @@ socket.on("typing", function (data) {
 
 // OnChange del input de la imagen para enviarla al servidor y que la suba
 $(document).on("change", "#chatImageInput", function (e) {
-  socket.emit("uploadFile", e.target.files[0].name);
+  socket.emit("uploadFile", {
+    buffer: e.target.files[0],
+    name: e.target.files[0].name,
+    type: e.target.files[0].type,
+  });
+});
+
+$(document).on('click', '.fa-download', function () {
+  let src = $(this).siblings('img').attr('src');
+  let srcNotImg = $(this).siblings('.fileNotImg').text();
+  let actualURL = window.location.href;
+  var filename;
+
+  if(src === undefined){
+    filename = srcNotImg.split('/').pop();
+    fetch(`${actualURL}${srcNotImg}`)
+      .then((response) => {
+        let blob = new Blob([response], {type: 'application/pdf'});
+        saveAs(blob, filename);
+      });
+  }else{
+    filename = src.split('/').pop();
+    fetch(`${actualURL}${src}`)
+    .then((response) => response.blob())
+    .then((blob) => {
+      saveAs(blob, filename);
+    });
+  }
 });

@@ -339,3 +339,15 @@ input#chatImageInput{
     transition: var(--transition-time);
     scale: 1.05;
 }
+
+.fa-download{
+    color: var(--icon-color);
+    font-size: 1.75rem;
+    transition: var(--transition-time);
+}
+
+.fa-download:hover{
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition-time);
+}

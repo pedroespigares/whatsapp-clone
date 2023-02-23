@@ -38,14 +38,16 @@ var connectedUsersRoom9 = 0;
 var connectedUsersRoom10 = 0;
 
 
-app.use(express.static('public'))
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
 
   // Sacamos el directorio anterior para poder acceder a la carpeta public
 
   var prevFolder= path.dirname(__dirname).split('/').pop();
+  socket.publicFolder = prevFolder + '/public';
   socket.pathToUpload = prevFolder + '/public/userPhotos';
+  socket.uploadFilePath = prevFolder + '/public/uploadedFiles'
 
   // Setear ID del usuario
   socket.on('setID', (id) => {
@@ -181,9 +183,29 @@ io.on('connection', (socket) => {
 
   // Subir fichero
   socket.on('uploadFile', (file) => {
-    console.log(file);
+    let noWhiteSpaces = file.name.replace(/\s/g, '_')
+    writeFile(`${socket.uploadFilePath}/${noWhiteSpaces}`, file.buffer, (err) => {
+      if(err) console.log(err);
+      socket.emit('mesaggeWithFile', {path: `uploadedFiles/${noWhiteSpaces}`, username: socket.username, id: socket.userID, date: new Date(), type: file.type});
+    });
+  });
+
+  socket.on('handleMessageWithFile', (data) => {
+    io.to(socket.room).emit('WriteMesaggeWithFile', {path: data.path, username: socket.username, id: socket.userID, date: new Date(), type: data.type});
   });
     
+
+
+  // Descargar fichero
+  // socket.on('downloadFile', (data) => {
+  //   let filename = data.src.split('/')[1];
+  //   fetch(`${data.url}${data.src}`)
+  //   .then(res => res.blob())
+  //   .then(blob => {
+  //     saveAs(blob, filename);
+  //     console.log('File downloaded');
+  //   });
+  // });
 
   // Desconectar usuario
   socket.on('disconnect', () => {
