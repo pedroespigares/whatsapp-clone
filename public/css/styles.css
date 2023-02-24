@@ -65,7 +65,6 @@
     color: var(--text-color);
     cursor: pointer;
     transition: var(--transition-time);
-    scale: 1.1;
 }
 
 .search-chat{
@@ -98,12 +97,6 @@
     transition: var(--transition-time);
 }
 
-.fa-plus:hover{
-    color: var(--text-color);
-    cursor: pointer;
-    transition: var(--transition-time);
-    scale: 1.1;
-}
 
 #usersConnected{
     color: var(--icon-color);
@@ -127,9 +120,17 @@
     border: none !important;
 }
 
+
 .chat-preview .card-title{
     color: var(--text-color);
     font-size: 1.7rem;
+    transition: var(--transition-time);
+}
+
+.chat-preview .card-title:hover{
+    color: var(--light-green);
+    transition: var(--transition-time);
+    cursor: pointer;
 }
 
 .chat-preview .card-text{
@@ -153,8 +154,7 @@
 .chat-header .search-in-chat i:hover{
     color: var(--text-color);
     cursor: pointer;
-    transition: var(--transition-time);
-    scale: 1.1;
+    transition: var(--transition-time)
 }
 
 .chat-messages{
@@ -210,7 +210,6 @@
     color: var(--text-color);
     cursor: pointer;
     transition: var(--transition-time);
-    scale: 1.1;
 }
 
 .chat-type input{
@@ -239,6 +238,10 @@
     color: var(--chat-notif-text-color);
     font-size: 1.5rem;
     border-radius: 0.5rem;
+}
+
+.room-preview{
+    margin-top: auto;
 }
 
 ul.dropdown-menu{

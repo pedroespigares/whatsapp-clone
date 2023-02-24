@@ -21,6 +21,7 @@ socket.on("usersConnected", function (users) {
 // OnChange del input de la foto de usuario
 $(document).on("change", "#imageInput", function (e) {
   uploadUserPhoto(e.target.files);
+  $("#userPhotoLabel").html(`Uploaded! <i class="fa-solid fa-check" class="w-50"></i>`);
 });
 
 // Cuando se envía el formulario de creación de usuario
@@ -49,7 +50,7 @@ $(document).on("submit", "#joinChat", function (e) {
                             <i class="fa-solid fa-users"></i>
                             <i class="fa-sharp fa-solid fa-circle-notch"></i>
                             <i class="fa-solid fa-message"></i>
-                            <i class="fa-solid fa-ellipsis-v" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                            <i class="fa-solid fa-ellipsis-v" data-bs-toggle="dropdown" aria-expanded="false" title="User options"></i>
                             <ul class="dropdown-menu">
                             <li><a class="dropdown-item logout">Logout</a></li>
                             </ul>
@@ -65,7 +66,7 @@ $(document).on("submit", "#joinChat", function (e) {
                     <header class="chat-header d-flex justify-content-between align-items-center w-100">
                         <div class="d-flex justify-content-center align-items-center gap-3">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
-                            <h3 class="mb-0">Room ${room}</h3>
+                            <h3 class="mb-0 room-number chat-header-title">Room ${room}</h3>
                         </div>
                         <div class="d-flex justify-content-center align-items-center gap-3 pe-4 search-in-chat">
                             <i class="fa-solid fa-search"></i>
@@ -76,7 +77,7 @@ $(document).on("submit", "#joinChat", function (e) {
                     </div>
                     <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
                         <i class="fa-sharp fa-regular fa-face-smile"></i>
-                        <label for="chatImageInput"><i class="fa-solid fa-paperclip"></i></label>
+                        <label for="chatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
                         <input type="file" id="chatImageInput">
                         <input id="newMessage" type="text" class="form-control" placeholder="Escribe un mensaje">
                         <i class="fa-solid fa-microphone"></i>
@@ -147,12 +148,12 @@ socket.on("photoOfUser", function (data) {
         <div class="card chat-preview w-100 mb-4">
               <div class="row g-0 w-100">
                 <div class="col-md-2 d-flex justify-content-center align-items-center">
-                  <img src="${data.path}" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar me-5">
+                  <img src="${data.path}" id="${data.userID}-img" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar me-5">
                 </div>
                 <div class="col-md-10 d-flex justify-content-center align-items-center">
                   <div class="card-body p-0 ps-3">
                     <input type="hidden" value="${data.userID}">
-                    <h5 class="card-title mb-0">${data.username}</h5>
+                    <h5 class="card-title list-username mb-0">${data.username}</h5>
                     <p class="card-text typing mt-2">Typing...</p>
                   </div>
                 </div>
@@ -235,7 +236,7 @@ socket.on('WriteMesaggeWithFile', function (messageData) {
                 <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
                     <img src=${messageData.path}>
                     <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download"></i>
+                    <i class="fa-solid fa-download" title="Download file"></i>
                 </div>
                 `);
     } else {
@@ -244,7 +245,7 @@ socket.on('WriteMesaggeWithFile', function (messageData) {
                   <h6 class="single-message-username mb-2">${messageData.username}</h6>
                     <img src=${messageData.path}>
                     <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download"></i>
+                    <i class="fa-solid fa-download" title="Download file"></i>
                 </div>
                 `);
     }
@@ -335,4 +336,49 @@ $(document).on('click', '.fa-download', function () {
       saveAs(blob, filename);
     });
   }
+});
+
+$(document).on('click', '.list-username', function () {
+  let userID = $(this).siblings('input').val();
+
+  if(userID !== socket.id){
+    $('.list-username').css('pointer-events', 'none');
+    let room = $('.room-number').text();
+    let username = $(this).text();
+    let userPhoto = $(`#${userID}-img`).attr('src');
+
+    $('.chat-header-title').text(username); 
+    $('.chat-header-title').siblings('img').attr('src', userPhoto);
+    $('.chat-header-title').siblings('img').addClass('rounded-circle');
+
+    $(".chat-group").append(`
+          <div class="card chat-preview room-preview w-100 mb-4">
+                <div class="row g-0 w-100">
+                  <div class="col-md-2 d-flex justify-content-center align-items-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="d-inline-block align-text-top rounded-circle avatar">
+                  </div>
+                  <div class="col-md-10 d-flex justify-content-center align-items-center">
+                    <div class="card-body p-0 ps-3">
+                      <h5 class="card-title list-room mb-0">Back to <span id="roomNumberInCard">${room}</span></h5>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          `);
+
+    $('#chat-messages').html('');
+  }
+});
+
+
+$(document).on('click', '.room-preview', function () {
+  let room = $('#roomNumberInCard').text();
+  let roomToJoin = room.split(' ').pop();
+  socket.emit('joinRoom', roomToJoin);
+  $(".room-preview").html('');
+
+  $('.chat-header-title').text(room);
+  $('.chat-header-title').siblings('img').attr('src', "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png");
+  $('.chat-header-title').siblings('img').removeClass('rounded-circle');
+  $('.list-username').css('pointer-events', 'auto');
 });
