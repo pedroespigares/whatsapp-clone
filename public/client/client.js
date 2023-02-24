@@ -1,3 +1,6 @@
+import { Views } from "../helpers/views.js";
+const views = new Views();
+
 var photo;
 
 function uploadUserPhoto(files) {
@@ -40,50 +43,7 @@ $(document).on("submit", "#joinChat", function (e) {
 
   $("#usernameInput").val();
   $("body").addClass("container-fluid");
-  $("body").html(`
-            <div class="row">
-                <aside class="col-3 p-0 m-0">
-                    <header class="d-flex justify-content-between align-items-center sidebar-header">
-                        <div id="sidebar_header" class="d-flex align-items-center justify-content-center gap-3">       
-                        </div>
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <i class="fa-solid fa-users"></i>
-                            <i class="fa-sharp fa-solid fa-circle-notch"></i>
-                            <i class="fa-solid fa-message"></i>
-                            <i class="fa-solid fa-ellipsis-v" data-bs-toggle="dropdown" aria-expanded="false" title="User options"></i>
-                            <ul class="dropdown-menu">
-                            <li><a class="dropdown-item logout">Logout</a></li>
-                            </ul>
-                        </div>
-                    </header>
-                    <div class="d-flex flex-column justify-content-start align-items-center chat-group gap-3">
-                        <p id="usersConnected" class="text-center mt-3"></p>
-                        <div id="user-list" class="align-self-start ps-5"></div>
-                    </div>
-                </aside>
-                
-                <main class="col-9 d-flex flex-column justify-content-start align-items-center p-0 m-0">
-                    <header class="chat-header d-flex justify-content-between align-items-center w-100">
-                        <div class="d-flex justify-content-center align-items-center gap-3">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="avatar">
-                            <h3 class="mb-0 room-number chat-header-title">Room ${room}</h3>
-                        </div>
-                        <div class="d-flex justify-content-center align-items-center gap-3 pe-4 search-in-chat">
-                            <i class="fa-solid fa-search"></i>
-                            <i class="fa-solid fa-ellipsis-v"></i>
-                        </div>
-                    </header>
-                    <div id="chat-messages" class="chat-messages w-100 d-flex flex-column justify-content-start">
-                    </div>
-                    <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
-                        <i class="fa-sharp fa-regular fa-face-smile"></i>
-                        <label for="chatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
-                        <input type="file" id="chatImageInput">
-                        <input id="newMessage" type="text" class="form-control" placeholder="Escribe un mensaje">
-                        <i class="fa-solid fa-microphone"></i>
-                    </div>
-                </main>
-            </div>`);
+  views.chatView(room);
 });
 //   });
 
@@ -111,13 +71,9 @@ socket.on("newUserConnected", function (users) {
   }
 
   if (lastUser.id == socket.id) {
-    $("#chat-messages").append(`
-                <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">You have joined the chat</p>
-            `);
+    views.selfJoinedChat();
   } else {
-    $("#chat-messages").append(`
-                <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">${lastUser.username} has joined the chat</p>
-            `);
+    views.otherJoinedChat(lastUser.username);
   }
 
   socket.emit("singleUserPhoto", {
@@ -126,10 +82,7 @@ socket.on("newUserConnected", function (users) {
   });
 
   socket.on("singleUserPhoto", function (data) {
-    $("#sidebar_header").html(`
-                <img src=${data.path} alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar">
-                <h3 class="mb-0 usernameInHeader">${data.username}</h3>
-            `);
+    views.changeSidebarHeader(data.path, data.username)
   });
 
   $("#usersConnected").html(`Users connected: ${users.length}`);
@@ -144,22 +97,7 @@ socket.on("newUserConnected", function (users) {
 
 // Sacamos la foto del usuario que se ha conectado
 socket.on("photoOfUser", function (data) {
-  $("#user-list").append(`
-        <div class="card chat-preview w-100 mb-4">
-              <div class="row g-0 w-100">
-                <div class="col-md-2 d-flex justify-content-center align-items-center">
-                  <img src="${data.path}" id="${data.userID}-img" alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar me-5">
-                </div>
-                <div class="col-md-10 d-flex justify-content-center align-items-center">
-                  <div class="card-body p-0 ps-3">
-                    <input type="hidden" value="${data.userID}">
-                    <h5 class="card-title list-username mb-0">${data.username}</h5>
-                    <p class="card-text typing mt-2">Typing...</p>
-                  </div>
-                </div>
-              </div>
-          </div>
-        `);
+  views.addIntoUserList(data);
 });
 
 // Cuando se desconecta un usuario
@@ -167,9 +105,7 @@ socket.on("userDisconnected", function (userData) {
   let userID = userData.id;
   let username = userData.username;
   $(`input[value="${userID}"]`).parent().parent().parent().parent().remove();
-  $("#chat-messages").append(`
-              <p class="chat-notification text-center mt-4 mb-4 me-4 p-2 w-25 align-self-center">${username} has left the chat</p>
-          `);
+  views.userDisconnected(username);
   $("#usersConnected").html(`Users connected: ${userData.usersConnected}`);
   $("#chat-messages").animate(
     { scrollTop: $("#chat-messages").prop("scrollHeight") },
@@ -194,20 +130,9 @@ socket.on("newMessage", function (messageData) {
     minutes = "0" + minutes;
   }
   if (messageData.id === socket.id) {
-    $("#chat-messages").append(`
-              <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
-                  <p class="single-message-content m-0">${messageData.message}</p>
-                  <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
-              </div>
-              `);
+    views.selfMessage(messageData, hours, minutes);
   } else {
-    $("#chat-messages").append(`
-              <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
-                  <h6 class="single-message-username mb-0">${messageData.username}</h6>
-                  <p class="single-message-content m-0">${messageData.message}</p>
-                  <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
-              </div>
-              `);
+    views.otherMessage(messageData, hours, minutes);
   }
 
   $(".single-message-username").css("color", "#ee50af");
@@ -232,41 +157,15 @@ socket.on('WriteMesaggeWithFile', function (messageData) {
 
   if(messageData.type.includes('image')){
     if (messageData.id === socket.id) {
-      $("#chat-messages").append(`
-                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
-                    <img src=${messageData.path}>
-                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download" title="Download file"></i>
-                </div>
-                `);
+      views.selfMessageWithImg(messageData, hours, minutes);
     } else {
-      $("#chat-messages").append(`
-                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
-                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
-                    <img src=${messageData.path}>
-                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download" title="Download file"></i>
-                </div>
-                `);
+      views.otherUserMessageWithImg(messageData, hours, minutes);
     }
   }else{
     if (messageData.id === socket.id) {
-      $("#chat-messages").append(`
-                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
-                    <p class="single-message-content fileNotImg m-0">${filename}</p>
-                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download"></i>
-                </div>
-                `);
+      views.selfMessageWithFile(filename, hours, minutes);
     } else {
-      $("#chat-messages").append(`
-                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
-                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
-                    <p class="single-message-content fileNotImg m-0">${filename}</p>
-                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
-                    <i class="fa-solid fa-download"></i>
-                </div>
-                `);
+      views.otherUserMessageWithFile(messageData, filename, hours, minutes);
     }
   }
 
@@ -351,20 +250,7 @@ $(document).on('click', '.list-username', function () {
     $('.chat-header-title').siblings('img').attr('src', userPhoto);
     $('.chat-header-title').siblings('img').addClass('rounded-circle');
 
-    $(".chat-group").append(`
-          <div class="card chat-preview room-preview w-100 mb-4">
-                <div class="row g-0 w-100">
-                  <div class="col-md-2 d-flex justify-content-center align-items-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp Logo" class="d-inline-block align-text-top rounded-circle avatar">
-                  </div>
-                  <div class="col-md-10 d-flex justify-content-center align-items-center">
-                    <div class="card-body p-0 ps-3">
-                      <h5 class="card-title list-room mb-0">Back to <span id="roomNumberInCard">${room}</span></h5>
-                    </div>
-                  </div>
-                </div>
-            </div>
-          `);
+    views.addRoomToList(room);
 
     $('#chat-messages').html('');
   }
