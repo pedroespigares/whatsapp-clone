@@ -157,7 +157,7 @@
     transition: var(--transition-time)
 }
 
-.chat-messages{
+.chat-messages, .private-chat-messages{
     background-image: url("../images/bg-img.jpg");
     overflow-y: scroll;
     height: calc(100vh - (62px + 62.5px));
@@ -281,7 +281,7 @@ ul.dropdown-menu{
     font-weight: var(--text-font-weight);
 }
 
-.typing{
+.typing, .typingInPrivate{
     color: var(--light-green) !important;
     font-size: 1.75rem;
     font-weight: bold;
@@ -320,7 +320,7 @@ input#imageInput{
     display: none;
 }
 
-input#chatImageInput{
+input#chatImageInput, input#privateChatImageInput{
     display: none;
 }
 
@@ -353,4 +353,15 @@ input#chatImageInput{
     color: var(--text-color);
     cursor: pointer;
     transition: var(--transition-time);
+}
+
+#photo-error{
+    color: rgb(252, 56, 56);
+    font-size: 1.75rem;
+    font-weight: var(--title-font-weight);
+    display: none;
+}
+
+.dm-notification{
+    color: #f0ad4e !important;
 }

@@ -33,17 +33,19 @@ $(document).on("submit", "#joinChat", function (e) {
   let username = $("#usernameInput").val();
   let room = $("#chatSelect").val();
 
-  socket.emit("addUserToRoom", {
-    username: username,
-    room: room,
-    userPhoto: photo,
-  });
+  if($("#imageInput").val() != ""){
+    socket.emit("addUserToRoom", {
+      username: username,
+      room: room,
+      userPhoto: photo,
+    });
 
-  //   socket.on('userPhotoUploaded', function(){
-
-  $("#usernameInput").val();
-  $("body").addClass("container-fluid");
-  views.chatView(room);
+    $("#usernameInput").val();
+    $("body").addClass("container-fluid");
+    views.chatView(room);
+  } else {
+    $('#photo-error').css('display', 'block');
+  }
 });
 //   });
 
@@ -116,8 +118,20 @@ socket.on("userDisconnected", function (userData) {
 // Cuando se escribe un mensaje
 $(document).on("keyup", "#newMessage", function (e) {
   if (e.keyCode === 13) {
-    socket.emit("newMessage", $("#newMessage").val());
-    $("#newMessage").val("");
+    if($("#newMessage").val() != ""){
+      socket.emit("newMessage", $("#newMessage").val());
+      $("#newMessage").val("");
+    }
+  }
+});
+
+// Cuando se envía un mensaje en privado
+$(document).on("keyup", "#newPrivateMessage", function (e) {
+  if (e.keyCode === 13) {
+    if($("#newPrivateMessage").val() != ""){
+      socket.emit("newPrivateMessage", $("#newPrivateMessage").val());
+      $("#newPrivateMessage").val("");
+    }
   }
 });
 
@@ -132,7 +146,7 @@ socket.on("newMessage", function (messageData) {
   if (messageData.id === socket.id) {
     views.selfMessage(messageData, hours, minutes);
   } else {
-    views.otherMessage(messageData, hours, minutes);
+    views.otherUserMessage(messageData, hours, minutes);
   }
 
   $(".single-message-username").css("color", "#ee50af");
@@ -142,10 +156,41 @@ socket.on("newMessage", function (messageData) {
   );
 });
 
+// Cuando se envía un mensaje privado
+socket.on("newPrivateMessage", function (messageData) {
+  let formattedDate = new Date(messageData.date);
+  let hours = formattedDate.getHours();
+  let minutes = formattedDate.getMinutes();
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  if (messageData.id === socket.id) {
+    views.selfPrivateMessage(messageData, hours, minutes);
+  } else {
+    views.otherUserPrivateMessage(messageData, hours, minutes);
+  }
+   
+  $(".single-message-username").css("color", "#ee50af");
+  $("#private-chat-messages").animate(
+    { scrollTop: $("#private-chat-messages").prop("scrollHeight") },
+    500
+  );
+});
+
+
+// Cuando se envía un mensaje con archivo
 socket.on('mesaggeWithFile', function (messageData) {
   socket.emit('handleMessageWithFile', messageData);
 });
 
+
+// Cuando se envía un mensaje privado con archivo
+socket.on('privateMesaggeWithFile', function (messageData) {
+  socket.emit('handlePrivateMessageWithFile', messageData);
+});
+
+
+// Escritura de mensajes con archivos
 socket.on('WriteMesaggeWithFile', function (messageData) {
   let formattedDate = new Date(messageData.date);
   let hours = formattedDate.getHours();
@@ -176,6 +221,37 @@ socket.on('WriteMesaggeWithFile', function (messageData) {
   );
 });
 
+socket.on("WritePrivateMesaggeWithFile", function (messageData) {
+  let formattedDate = new Date(messageData.date);
+  let hours = formattedDate.getHours();
+  let minutes = formattedDate.getMinutes();
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  let filename = messageData.path.split('/').pop();
+
+  if(messageData.type.includes('image')){
+    if (messageData.id === socket.id) {
+      views.selfPrivateMessageWithImg(messageData, hours, minutes);
+    } else {
+      views.otherUserPrivateMessageWithImg(messageData, hours, minutes);
+    }
+  }else{
+    if (messageData.id === socket.id) {
+      views.selfPrivateMessageWithFile(filename, hours, minutes);
+    } else {
+      views.otherUserPrivateMessageWithFile(messageData, filename, hours, minutes);
+    }
+  }
+
+  $(".single-message-username").css("color", "#ee50af");
+  $("#private-chat-messages").animate(
+    { scrollTop: $("#private-chat-messages").prop("scrollHeight") },
+    500
+  );
+});
+
+
 // Cuando se escribe un mensaje (para mostrar el icono de enviar)
 $(document).on("keyup", "#newMessage", function () {
   if ($("#newMessage").val() !== "") {
@@ -186,6 +262,19 @@ $(document).on("keyup", "#newMessage", function () {
       .removeClass("fa-paper-plane")
       .addClass("fa-microphone");
     socket.emit("typing", { userID: socket.id, typing: false });
+  }
+});
+
+// Cuando se escribe un mensaje privado (para mostrar el icono de enviar)
+$(document).on("keyup", "#newPrivateMessage", function () {
+  if ($("#newPrivateMessage").val() !== "") {
+    $(".fa-microphone").removeClass("fa-microphone").addClass("fa-paper-plane");
+    socket.emit("typingInPrivate", { userID: socket.id, typing: true });
+  } else {
+    $(".fa-paper-plane")
+      .removeClass("fa-paper-plane")
+      .addClass("fa-microphone");
+    socket.emit("typingInPrivate", { userID: socket.id, typing: false });
   }
 });
 
@@ -204,6 +293,20 @@ socket.on("typing", function (data) {
   }
 });
 
+// Cuando se está escribiendo un mensaje privado (para mostrar el texto "typing in your DM...")
+socket.on("typingInPrivate", function (data) {
+  if (!data.typing) {
+    setInterval(function () {
+      $(`input[value="${data.userID}"]`)
+        .siblings(".typingInPrivate")
+        .css("display", "none");
+    }, 3000);
+  } else {
+    $(`input[value="${data.userID}"]`)
+      .siblings(".typingInPrivate")
+      .css("display", "block");
+  }
+});
 
 // OnChange del input de la imagen para enviarla al servidor y que la suba
 $(document).on("change", "#chatImageInput", function (e) {
@@ -214,6 +317,15 @@ $(document).on("change", "#chatImageInput", function (e) {
   });
 });
 
+$(document).on("change", "#privateChatImageInput", function (e) {
+  socket.emit("uploadFileFromPrivateChat", {
+    buffer: e.target.files[0],
+    name: e.target.files[0].name,
+    type: e.target.files[0].type,
+  });
+});
+
+// Evento para descargar el archivo
 $(document).on('click', '.fa-download', function () {
   let src = $(this).siblings('img').attr('src');
   let srcNotImg = $(this).siblings('.fileNotImg').text();
@@ -252,19 +364,72 @@ $(document).on('click', '.list-username', function () {
 
     views.addRoomToList(room);
 
-    $('#chat-messages').html('');
+    $('#chat-messages').replaceWith(`
+    <div id="private-chat-messages" class="private-chat-messages w-100 d-flex flex-column justify-content-start">
+    </div>
+    `);
+
+    $('#newMessage').replaceWith(`
+      <input id="newPrivateMessage" type="text" class="form-control" placeholder="Write a message...">
+    `)
+
+    $('#chatImageInput').replaceWith(`<input type="file" id="privateChatImageInput">`);
+
+    $('#chatImageInputLabel').replaceWith(`
+      <label id="privateChatImageInputLabel" for="privateChatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
+    `);
+
+    socket.emit('StartPrivateMessage', userID);
+    socket.emit('notifyUser', {
+      from: socket.id,
+      to: userID
+    });
+    
+    if($('.dm-notification').length > 0){
+      socket.emit('deleteNotification', socket.id);
+    }
   }
 });
 
+socket.on('notifyUser', function (userID) {
+  let inputOfUser = $(`input[value="${userID}"]`);
+  let divFromUser = inputOfUser.parent();
+
+  divFromUser.append(`
+    <p class="card-text dm-notification mt-2">Wants to DM you!</p>
+  `);
+});
+
+socket.on('deleteNotification', function (userID) {
+  let inputOfUser = $(`input[value="${userID}"]`);
+  let divFromUser = inputOfUser.parent();
+
+  divFromUser.find('.dm-notification').remove();
+});
 
 $(document).on('click', '.room-preview', function () {
   let room = $('#roomNumberInCard').text();
-  let roomToJoin = room.split(' ').pop();
-  socket.emit('joinRoom', roomToJoin);
+
+  socket.emit('leavePrivateMessages');
+
   $(".room-preview").html('');
 
   $('.chat-header-title').text(room);
   $('.chat-header-title').siblings('img').attr('src', "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png");
   $('.chat-header-title').siblings('img').removeClass('rounded-circle');
   $('.list-username').css('pointer-events', 'auto');
+
+  $('#private-chat-messages').replaceWith(`
+  <div id="chat-messages" class="chat-messages w-100 d-flex flex-column justify-content-start">
+  </div>`);
+
+  $('#newPrivateMessage').replaceWith(`
+    <input id="newMessage" type="text" class="form-control" placeholder="Write a message...">
+  `)
+
+  $('#privateChatImageInput').replaceWith(`<input type="file" id="chatImageInput">`);
+
+  $('#privateChatImageInputLabel').replaceWith(`
+      <label id="chatImageInputLabel" for="chatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
+    `);
 });

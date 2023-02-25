@@ -46,9 +46,10 @@
                 <div class="d-flex text-center justify-content-center align-items-center userPhotoDiv">
                     <label for="imageInput" class="w-75 d-flex justfy-content-center align-items-center gap-4 ms-5 ps-4" id="userPhotoLabel">User Photo <i class="fa-solid fa-image" class="w-50"></i></label>
                     
-                    <input type="file" id="imageInput" accept="image/*" required>
+                    <input type="file" id="imageInput" accept="image/*" name="imageInput">
                 </div>
-            <input type="submit" id="joinChatButton" value="Join Chat" class="btn btn-primary p-3">Join Chat</input>
+                <p id="photo-error" class="p-1">You have to upload a photo!</p>
+            <input type="submit" id="joinChatButton" value="Join Chat" class="btn btn-primary p-3"></input>
             </form>
         </div>
         

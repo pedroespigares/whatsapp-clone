@@ -37,9 +37,9 @@ export class Views {
                     </div>
                     <div class="chat-type d-flex justify-content-evenly align-items-center w-100 gap-3 ps-3 pe-3 pt-3 pb-3">
                         <i class="fa-sharp fa-regular fa-face-smile"></i>
-                        <label for="chatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
+                        <label id="chatImageInputLabel" for="chatImageInput"><i class="fa-solid fa-paperclip" title="Upload files"></i></label>
                         <input type="file" id="chatImageInput">
-                        <input id="newMessage" type="text" class="form-control" placeholder="Escribe un mensaje">
+                        <input id="newMessage" type="text" class="form-control" placeholder="Write a message...">
                         <i class="fa-solid fa-microphone"></i>
                     </div>
                 </main>
@@ -83,6 +83,7 @@ export class Views {
                     <input type="hidden" value="${data.userID}">
                     <h5 class="card-title list-username mb-0">${data.username}</h5>
                     <p class="card-text typing mt-2">Typing...</p>
+                    <p class="card-text typingInPrivate mt-2">Typing in your DM...</p>
                   </div>
                 </div>
               </div>
@@ -92,6 +93,15 @@ export class Views {
 
     selfMessage(messageData, hours, minutes){
         $("#chat-messages").append(`
+              <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
+                  <p class="single-message-content m-0">${messageData.message}</p>
+                  <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
+              </div>
+              `);
+    }
+
+    selfPrivateMessage(messageData, hours, minutes){
+        $("#private-chat-messages").append(`
               <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
                   <p class="single-message-content m-0">${messageData.message}</p>
                   <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
@@ -109,8 +119,28 @@ export class Views {
               `);
     }
 
+    otherUserPrivateMessage(messageData, hours, minutes){
+        $("#private-chat-messages").append(`
+              <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
+                  <h6 class="single-message-username mb-0">${messageData.username}</h6>
+                  <p class="single-message-content m-0">${messageData.message}</p>
+                  <p class="single-message-date mb-0 align-self-end">${hours}:${minutes}</p>
+              </div>
+              `);
+    }
+
     selfMessageWithImg(messageData, hours, minutes){
         $("#chat-messages").append(`
+                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
+                    <img src=${messageData.path}>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download" title="Download file"></i>
+                </div>
+                `);
+    }
+
+    selfPrivateMessageWithImg(messageData, hours, minutes){
+        $("#private-chat-messages").append(`
                 <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
                     <img src=${messageData.path}>
                     <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
@@ -130,6 +160,17 @@ export class Views {
                 `);
     }
 
+    otherUserPrivateMessageWithImg(messageData, hours, minutes){
+        $("#private-chat-messages").append(`
+                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
+                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
+                    <img src=${messageData.path}>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download" title="Download file"></i>
+                </div>
+                `);
+    }
+
     selfMessageWithFile(filename, hours, minutes){
         $("#chat-messages").append(`
                 <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
@@ -140,8 +181,29 @@ export class Views {
                 `);
     }
 
+    selfPrivateMessageWithFile(filename, hours, minutes){
+        $("#private-chat-messages").append(`
+                <div class="single-message-my-user mt-4 mb-4 me-4 p-3 align-self-end d-flex flex-column">
+                    <p class="single-message-content fileNotImg m-0">${filename}</p>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    }
+
     otherUserMessageWithFile(messageData, filename, hours, minutes){
         $("#chat-messages").append(`
+                <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
+                  <h6 class="single-message-username mb-2">${messageData.username}</h6>
+                    <p class="single-message-content fileNotImg m-0">${filename}</p>
+                    <p class="single-message-date mt-2 mb-2 align-self-end">${hours}:${minutes}</p>
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                `);
+    }
+
+    otherUserPrivateMessageWithFile(messageData, filename, hours, minutes){
+        $("#private-chat-messages").append(`
                 <div class="single-message-other-user mt-4 mb-4 ms-4 p-3 align-self-start d-flex flex-column gap-2">
                   <h6 class="single-message-username mb-2">${messageData.username}</h6>
                     <p class="single-message-content fileNotImg m-0">${filename}</p>

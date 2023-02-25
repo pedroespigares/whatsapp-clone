@@ -48,6 +48,7 @@ io.on('connection', (socket) => {
   socket.publicFolder = prevFolder + '/public';
   socket.pathToUpload = prevFolder + '/public/userPhotos';
   socket.uploadFilePath = prevFolder + '/public/uploadedFiles'
+  socket.privateMessageUserID = '';
 
   // Setear ID del usuario
   socket.on('setID', (id) => {
@@ -150,7 +151,7 @@ io.on('connection', (socket) => {
 
   // Enviar mensaje
   socket.on("newMessage", (msg) => {
-      var messageData = {
+      let messageData = {
           message: msg,
           username: socket.username,
           id: socket.userID,
@@ -158,9 +159,24 @@ io.on('connection', (socket) => {
       }
       io.to(socket.room).emit('newMessage', messageData);
   })
+
+  socket.on("newPrivateMessage", (msg) => {
+    let privateMessageData= {
+      message: msg,
+      username: socket.username,
+      id: socket.userID,
+      date: new Date()
+    }
+
+    io.to(socket.privateMessageUserID).emit('newPrivateMessage', privateMessageData);
+  });
   
   socket.on('typing', (data) => {
     io.to(socket.room).emit('typing', {userID: data.userID, typing: data.typing});
+  });
+
+  socket.on('typingInPrivate', (data) => {
+    io.to(socket.privateMessageUserID).emit('typingInPrivate', {userID: data.userID, typing: data.typing});
   });
 
   // Enviar foto de usuario
@@ -190,22 +206,39 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('uploadFileFromPrivateChat', (file) => {
+    let noWhiteSpaces = file.name.replace(/\s/g, '_')
+    writeFile(`${socket.uploadFilePath}/${noWhiteSpaces}`, file.buffer, (err) => {
+      if(err) console.log(err);
+      socket.emit('privateMesaggeWithFile', {path: `uploadedFiles/${noWhiteSpaces}`, username: socket.username, id: socket.userID, date: new Date(), type: file.type});
+    });
+  });
+
+  // Enviar datos de fichero
   socket.on('handleMessageWithFile', (data) => {
     io.to(socket.room).emit('WriteMesaggeWithFile', {path: data.path, username: socket.username, id: socket.userID, date: new Date(), type: data.type});
   });
+
+  // Enviar datos de fichero a usuario privado
+  socket.on('handlePrivateMessageWithFile', (data) => {
+    io.to(socket.privateMessageUserID).emit('WritePrivateMesaggeWithFile', {path: data.path, username: socket.username, id: socket.userID, date: new Date(), type: data.type});
+  });
     
 
+  socket.on('StartPrivateMessage', (userID)=>{
+    socket.privateMessageUserID = userID;
 
-  // Descargar fichero
-  // socket.on('downloadFile', (data) => {
-  //   let filename = data.src.split('/')[1];
-  //   fetch(`${data.url}${data.src}`)
-  //   .then(res => res.blob())
-  //   .then(blob => {
-  //     saveAs(blob, filename);
-  //     console.log('File downloaded');
-  //   });
-  // });
+    socket.join(userID);
+    socket.emit('deleteNotification', userID);
+  });
+
+  socket.on('notifyUser', (data) => {
+    socket.to(data.to).emit('notifyUser', data.from);
+  });
+
+  socket.on('leavePrivateMessages', () => {
+    socket.leave(socket.privateMessageUserID);
+  });
 
   // Desconectar usuario
   socket.on('disconnect', () => {
