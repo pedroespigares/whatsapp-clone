@@ -2,9 +2,9 @@
     "version": 2,
     "name": "whatsapp-clone",
     "builds": [
-       { "src": "./index.js", "use": "@vercel/node" }
+       { "src": "server.js", "use": "@vercel/node" }
     ],
     "routes": [
-       { "src": "/(.*)", "dest": "/" }
+       { "src": "/(.*)", "dest": "/server.js" }
     ]
  }

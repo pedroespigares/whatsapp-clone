@@ -44,10 +44,9 @@ io.on('connection', (socket) => {
 
   // Sacamos el directorio anterior para poder acceder a la carpeta public
 
-  var prevFolder= path.dirname(__dirname).split('/').pop();
-  socket.publicFolder = prevFolder + '/public';
-  socket.pathToUpload = prevFolder + '/public/userPhotos';
-  socket.uploadFilePath = prevFolder + '/public/uploadedFiles'
+  socket.publicFolder = __dirname + '/public';
+  socket.pathToUpload = __dirname + '/public/userPhotos';
+  socket.uploadFilePath = __dirname + '/public/uploadedFiles'
   socket.privateMessageUserID = '';
 
   // Setear ID del usuario
