@@ -4,7 +4,12 @@ function uploadUserPhoto(files) {
   photo = files[0];
 }
 
-var socket = io();
+// Version normal:
+// var socket = io();
+
+var socket = io("https://whatsapp-clone-abq3.onrender.com", {
+  path: "/socket.io/",
+});
 
 // Setear ID del usuario
 socket.on("connect", function () {
