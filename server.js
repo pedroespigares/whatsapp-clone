@@ -64,6 +64,7 @@ io.on('connection', (socket) => {
   socket.on('addUserToRoom', (data) => {
       socket.username = data.username;
       socket.room = data.room;
+      socket.state = data.state;
       socket.userPhoto = data.userPhoto;
 
 
@@ -79,6 +80,7 @@ io.on('connection', (socket) => {
       var userData = {
         id: socket.userID,
         username: data.username,
+        state: data.state,
       };
 
       switch(data.room){
@@ -191,7 +193,8 @@ io.on('connection', (socket) => {
   socket.on('singleUserPhoto', (data) => {
     socket.emit('singleUserPhoto', {
       path: `userPhotos/${data.userID}.jpg`,
-      username: data.username
+      username: data.username,
+      state: data.state
     });
   });
 

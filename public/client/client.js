@@ -33,11 +33,13 @@ $(document).on("change", "#imageInput", function (e) {
 $(document).on("submit", "#joinChat", function (e) {
   e.preventDefault();
   let username = $("#usernameInput").val();
+  let state = "Online"
   let room = $("#chatSelect").val();
 
   if($("#imageInput").val() != ""){
     socket.emit("addUserToRoom", {
       username: username,
+      state: state,
       room: room,
       userPhoto: photo,
     });
@@ -130,12 +132,13 @@ socket.on("newUserConnected", function (users) {
   socket.emit("singleUserPhoto", {
     userID: actualUser.id,
     username: actualUser.username,
+    state: actualUser.state,
   });
 
   socket.on("singleUserPhoto", function (data) {
     $("#sidebar_header").html(`
                 <img src=${data.path} alt="User Photo" class="d-inline-block align-text-top rounded-circle avatar">
-                <h3 class="mb-0 usernameInHeader">${data.username}</h3>
+                <h3 class="mb-0 usernameInHeader">${data.username} -</h3> <h3 class="mb-0 p-0 stateInHeader">${data.state}</h3>
             `);
   });
 
