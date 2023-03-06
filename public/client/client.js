@@ -7,7 +7,7 @@ function uploadUserPhoto(files) {
 // Version normal:
 // var socket = io();
 
-var socket = io("https://whatsapp-clone-abq3.onrender.com", {
+var socket = io("https://whatsapp-clone-pedro-espigares.onrender.com", {
   path: "/socket.io/",
 });
 
